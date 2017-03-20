@@ -68,14 +68,10 @@ trait RestHelperTrait
      */
     protected function parseRestPage($query)
     {
-        $limit = (isset($query[static::$restQueryKeyLimit]) && is_int($query[static::$restQueryKeyLimit])) ?
-            (int)$query[static::$restQueryKeyLimit] : null;
-        $offset = (isset($query[static::$restQueryKeyOffset]) && is_int($query[static::$restQueryKeyLimit])) ?
-            (int)$query[static::$restQueryKeyOffset] : null;
-        $page = (isset($query[static::$restQueryKeyPage]) && is_int($query[static::$restQueryKeyLimit])) ?
-            (int)$query[static::$restQueryKeyPage] : null;
-        $pageSize = (isset($query[static::$restQueryKeyPageSize]) && is_int($query[static::$restQueryKeyLimit])) ?
-            (int)$query[static::$restQueryKeyPageSize] : 15;
+        $limit = isset($query[static::$restQueryKeyLimit]) ? (int)$query[static::$restQueryKeyLimit] : null;
+        $offset = isset($query[static::$restQueryKeyOffset]) ? (int)$query[static::$restQueryKeyOffset] : null;
+        $page = isset($query[static::$restQueryKeyPage]) ? (int)$query[static::$restQueryKeyPage] : null;
+        $pageSize = isset($query[static::$restQueryKeyPageSize]) ? (int)$query[static::$restQueryKeyPageSize] : 15;
         if (is_null($limit) && is_null($offset) && !is_null($page)) {
             $limit = $pageSize;
             $offset = ($page - 1) * $pageSize;
