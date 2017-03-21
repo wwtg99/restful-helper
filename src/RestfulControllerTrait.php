@@ -11,7 +11,7 @@ namespace Wwtg99\RestfulHelper;
 
 use Illuminate\Http\Request;
 
-trait RestfulTemplateTrait
+trait RestfulControllerTrait
 {
     /**
      * Display a listing of the resource.
@@ -20,8 +20,8 @@ trait RestfulTemplateTrait
      */
     public function index()
     {
-        $input = $this->parseIndexRequest(request());
-        $data = $this->restIndex($input);
+        $inputs = $this->parseIndexRequest(request());
+        $data = $this->restIndex($inputs);
         return $this->responseRestIndex($data);
     }
 
@@ -73,7 +73,9 @@ trait RestfulTemplateTrait
      */
     public function destroy($id)
     {
-        //
+        $inputs = $this->parseDeleteRequest(request());
+        $data = $this->restDelete($inputs, $id);
+        return $this->responseRestDelete($data);
     }
 
     /**
@@ -109,6 +111,17 @@ trait RestfulTemplateTrait
      */
     protected function parseStoreRequest(Request $request)
     {
+        if (property_exists($this, 'creatableFields')) {
+            $fields = $this->creatableFields;
+            $inputs = [];
+            foreach ($fields as $field) {
+                $v = $request->input($field);
+                if (!is_null($v)) {
+                    $inputs[$field] = $v;
+                }
+            }
+            return $inputs;
+        }
         return $request->all();
     }
 
@@ -146,7 +159,7 @@ trait RestfulTemplateTrait
      */
     protected function restShow($inputs, $id)
     {
-        return $this->getModel()->find($id);
+        return $this->getModel()->findOrFail($id);
     }
 
     /**
@@ -164,6 +177,23 @@ trait RestfulTemplateTrait
      */
     protected function parseUpdateRequest(Request $request)
     {
+        if (property_exists($this, 'updateableFields')) {
+            $fields = $this->updateableFields;
+            $inputs = [];
+            if ($request->method() == 'PUT') {
+                foreach ($fields as $field) {
+                    $inputs[$field] = $request->input($field);
+                }
+            } else {
+                foreach ($fields as $field) {
+                    $v = $request->input($field);
+                    if (!is_null($v)) {
+                        $inputs[$field] = $v;
+                    }
+                }
+            }
+            return $inputs;
+        }
         return $request->all();
     }
 
@@ -174,7 +204,12 @@ trait RestfulTemplateTrait
      */
     protected function restUpdate($inputs, $id)
     {
-        return $this->getModel()->find($id)->update($inputs);
+        $model = $this->getModel()->find($id);
+        $re = $model->update($inputs);
+        if ($re) {
+            return $model->get();
+        }
+        return false;
     }
 
     /**
@@ -183,7 +218,11 @@ trait RestfulTemplateTrait
      */
     protected function responseRestUpdate($data)
     {
-        return response()->json($data, 201, [], JSON_UNESCAPED_UNICODE);
+        if ($data) {
+            return response()->json($data, 201, [], JSON_UNESCAPED_UNICODE);
+        } else {
+            return response('', 400);
+        }
     }
 
     /**
@@ -211,7 +250,11 @@ trait RestfulTemplateTrait
      */
     protected function responseRestDelete($data)
     {
-        return response()->json($data, 204, [], JSON_UNESCAPED_UNICODE);
+        if ($data) {
+            return response('', 204);
+        } else {
+            return response('', 400);
+        }
     }
 
     /**

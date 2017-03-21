@@ -1,7 +1,7 @@
 Restful query parser trait for Laravel eloquent model
 =====================================================
 
-Add filters, sorts, fields and pagination for restful query.
+Add helper traits for restful query.
 
 # Installation
 ```
@@ -35,6 +35,8 @@ Use `/users?limit=10&offset=10` to limit 10 and offset 10 records, offset can be
 Also can use `page` and `page_size`, `/users?page=2&page_size=15`, page_size can be omitted, default 15.
 
 # Usage
+## Eloquent model trait
+
 1. Add RestHelper trait in eloquent model.
 ```
 use RestHelperTrait;
@@ -51,3 +53,33 @@ $user = User::index(request()->all())->get();
 ```
 $user = User::index()->where('name', 'admin')->get();
 ```
+
+## Controller trait
+
+1. Add RestfulController trait in resource controller.
+```
+use RestfulControllerTrait;
+```
+
+2. Implement getModel method.
+```
+protected function getModel()
+{
+    return User::query();
+}
+```
+
+3. Add controller to routes
+```
+Route::resource('/path', 'controller');
+```
+
+4. Each resource method (index, show, store, update, destroy) has three parts.
+    1. parse requests
+    2. handle action
+    3. response
+
+If you want to change default index, show, store, update and destroy behaviors, just override it.
+
+Add $creatableFields = ['field1', 'field2'] to restrict fields to store.
+Add $updateableFields = ['field1', 'field2'] to restrict fields to update.
