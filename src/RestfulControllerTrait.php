@@ -204,10 +204,9 @@ trait RestfulControllerTrait
      */
     protected function restUpdate($inputs, $id)
     {
-        $model = $this->getModel()->find($id);
-        $re = $model->update($inputs);
+        $re = $this->getModel()->find($id)->update($inputs);
         if ($re) {
-            return $model->get();
+            return $this->getModel()->find($id);
         }
         return false;
     }
@@ -250,11 +249,7 @@ trait RestfulControllerTrait
      */
     protected function responseRestDelete($data)
     {
-        if ($data) {
-            return response('', 204);
-        } else {
-            return response('', 400);
-        }
+        return response('', 204);
     }
 
     /**
