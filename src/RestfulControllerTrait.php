@@ -240,7 +240,12 @@ trait RestfulControllerTrait
      */
     protected function restDelete($inputs, $id)
     {
-        return $this->getModel()->find($id)->delete();
+        $model = $this->getModel()->find($id);
+        if ($model) {
+            $model->delete();
+            return true;
+        }
+        return false;
     }
 
     /**
