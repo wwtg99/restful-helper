@@ -48,7 +48,11 @@ trait RestHelperTrait
         }
         if ($filters) {
             foreach ($filters as $f => $v) {
-                $query->where($f, $v);
+                if (is_array($v) && count($v) >= 2) {
+                    $query->where($f, $v[0], $v[1]);
+                } else {
+                    $query->where($f, $v);
+                }
             }
         }
         if ($limit) {
@@ -141,6 +145,14 @@ trait RestHelperTrait
             foreach ($this->filterableFields as $filterableField) {
                 if (isset($query[$filterableField])) {
                     $filters[$filterableField] = $query[$filterableField];
+                } elseif (isset($query[$filterableField . '>'])) {
+                    $filters[$filterableField] = ['>=', $query[$filterableField . '>']];
+                } elseif (isset($query[$filterableField . '<'])) {
+                    $filters[$filterableField] = ['<=', $query[$filterableField . '<']];
+                } elseif (isset($query[$filterableField . '!'])) {
+                    $filters[$filterableField] = ['<>', $query[$filterableField . '!']];
+                } elseif (isset($query[$filterableField . '*'])) {
+                    $filters[$filterableField] = ['like', '%' . $query[$filterableField . '*'] . '%'];
                 }
             }
             return $filters;

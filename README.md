@@ -19,6 +19,13 @@ $filterableFields = ['role'];
 ```
 Then use `/users?role=admin` to get user with role admin.
 
+Supported operators:
+- equal: /users?id=1
+- equal or greater than: /users?id>=1
+- equal or less than: /users?id<=2
+- not equal: /users?id!=1
+- like: /users?id*=1
+
 ### sorts
 Use `/users?sort=-role,created_at` to sort by role desc and created_at asc, comma(,) to separate.
 
@@ -69,6 +76,8 @@ protected function getModel()
 }
 ```
 
+Model should use RestHelperTrait to have index function.
+
 3. Add controller to routes
 ```
 Route::resource('/path', 'controller');
@@ -79,7 +88,7 @@ Route::resource('/path', 'controller');
     2. handle action
     3. response
 
-If you want to change default index, show, store, update and destroy behaviors, just override it.
+Override these template functions to change the default behaviors.
 
 Add $creatableFields = ['field1', 'field2'] to restrict fields to store.
 Add $updateableFields = ['field1', 'field2'] to restrict fields to update.
