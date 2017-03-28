@@ -40,12 +40,6 @@ trait RestHelperTrait
         $fields = $this->parseRestFields($inputs);
         $filters = $this->parseRestFilter($inputs);
         $sorts = $this->parseRestSort($inputs);
-        $query->select($fields);
-        if ($sorts) {
-            foreach ($sorts as $sort) {
-                $query->orderBy($sort[0], $sort[1]);
-            }
-        }
         if ($filters) {
             foreach ($filters as $f => $v) {
                 if (is_array($v) && count($v) >= 2) {
@@ -53,6 +47,15 @@ trait RestHelperTrait
                 } else {
                     $query->where($f, $v);
                 }
+            }
+        }
+        if ($fields == ['count']) {
+            return $query->cloneWithout(['columns'])->cloneWithoutBindings(['select']);
+        }
+        $query->select($fields);
+        if ($sorts) {
+            foreach ($sorts as $sort) {
+                $query->orderBy($sort[0], $sort[1]);
             }
         }
         if ($limit) {

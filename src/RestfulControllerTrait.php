@@ -79,6 +79,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Parse index requests.
+     *
      * @param Request $request
      * @return mixed
      */
@@ -88,15 +90,22 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Execute index query.
+     *
      * @param array $inputs
      * @return mixed
      */
     protected function restIndex($inputs)
     {
+        if (isset($inputs[RestHelperTrait::$restQueryKeyFields]) && $inputs[RestHelperTrait::$restQueryKeyFields] == 'count') {
+            return $this->getModel()->index($inputs)->count();
+        }
         return $this->getModel()->index($inputs)->get();
     }
 
     /**
+     * Response index results.
+     *
      * @param $data
      * @return mixed
      */
@@ -106,6 +115,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Parse store requests.
+     *
      * @param Request $request
      * @return array
      */
@@ -126,6 +137,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Execute store query.
+     *
      * @param array $inputs
      * @return \Illuminate\Database\Eloquent\Model
      */
@@ -135,6 +148,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Response store results.
+     *
      * @param $data
      * @return mixed
      */
@@ -144,6 +159,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Parse show requests.
+     *
      * @param Request $request
      * @return array
      */
@@ -153,6 +170,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Execute show query.
+     *
      * @param array $inputs
      * @param $id
      * @return mixed
@@ -163,6 +182,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Response show results.
+     *
      * @param $data
      * @return mixed
      */
@@ -172,6 +193,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Parse update requests.
+     *
      * @param Request $request
      * @return array
      */
@@ -198,6 +221,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Execute update query.
+     *
      * @param array $inputs
      * @param $id
      * @return mixed
@@ -212,6 +237,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Response update results.
+     *
      * @param $data
      * @return mixed
      */
@@ -225,6 +252,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Parse delete requests.
+     *
      * @param Request $request
      * @return array
      */
@@ -234,6 +263,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Execute delete query.
+     *
      * @param array $inputs
      * @param $id
      * @return mixed
@@ -249,6 +280,8 @@ trait RestfulControllerTrait
     }
 
     /**
+     * Response delete results.
+     *
      * @param $data
      * @return mixed
      */

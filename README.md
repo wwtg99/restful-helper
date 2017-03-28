@@ -37,6 +37,8 @@ $selectableFields = ['name', 'role'];
 ```
 Then only name and role can be selected to show.
 
+Use `fields=count` to count results `/users?fields=count`.
+
 ### pagination
 Use `/users?limit=10&offset=10` to limit 10 and offset 10 records, offset can be omitted, default 0.
 Also can use `page` and `page_size`, `/users?page=2&page_size=15`, page_size can be omitted, default 15.
