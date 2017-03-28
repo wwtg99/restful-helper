@@ -98,7 +98,7 @@ trait RestfulControllerTrait
     protected function restIndex($inputs)
     {
         if (isset($inputs[RestHelperTrait::$restQueryKeyFields]) && $inputs[RestHelperTrait::$restQueryKeyFields] == 'count') {
-            return $this->getModel()->index($inputs)->count();
+            return ['number'=>$this->getModel()->index($inputs)->count()];
         }
         return $this->getModel()->index($inputs)->get();
     }
