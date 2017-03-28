@@ -100,7 +100,9 @@ trait RestHelperTrait
             if (property_exists($this, 'selectableFields') && $this->selectableFields && is_array($this->selectableFields)) {
                 $fields = array_intersect($this->selectableFields, $fields);
             }
-            return $fields;
+            if ($fields) {
+                return $fields;
+            }
         }
         if (property_exists($this, 'selectableFields') && $this->selectableFields && is_array($this->selectableFields)) {
             $fields = $this->selectableFields;
