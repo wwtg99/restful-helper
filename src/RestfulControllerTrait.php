@@ -9,6 +9,7 @@
 namespace Wwtg99\RestfulHelper;
 
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 trait RestfulControllerTrait
@@ -76,6 +77,14 @@ trait RestfulControllerTrait
         $inputs = $this->parseDeleteRequest(request());
         $data = $this->restDelete($inputs, $id);
         return $this->responseRestDelete($data);
+    }
+
+    public function batch(Request $request)
+    {
+        $inputs = json_decode($request->getContent(), true);
+        if ($inputs) {
+            $res = $this->batchProcess($inputs);
+        }
     }
 
     /**
@@ -288,6 +297,97 @@ trait RestfulControllerTrait
     protected function responseRestDelete($data)
     {
         return response('', 204);
+    }
+
+    protected function batchProcess($inputs)
+    {
+        $res = [];
+        foreach ($inputs as $method => $input) {
+            switch ($method) {
+                case 'GET': $res['GET'] = $this->batchGet($input); break;
+                case 'CREATE': $res['CREATE'] = $this->batchPost($input); break;
+                case 'UPDATE': $res['UPDATE'] = $this->batchUpdate($input); break;
+                case 'DELETE': $res['DELETE'] = $this->batchDelete($input); break;
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * @param $inputs
+     * @return array
+     */
+    protected function batchGet($inputs)
+    {
+        $res = [];
+        if (!is_array($inputs)) {
+            $inputs = explode(',', $inputs);
+        }
+        foreach ($inputs as $id) {
+            try {
+                $d = $this->restShow([], $id);
+                array_push($res, $d);
+            } catch (ModelNotFoundException $e) {
+                //not found
+                array_push($res, ['code'=>404, 'error'=>$e->getMessage()]);
+            }
+        }
+        return $res;
+    }
+
+    protected function batchPost($inputs)
+    {
+        $res = [];
+        if (!is_array($inputs)) {
+            $inputs = json_decode($inputs, true);
+        }
+        if ($inputs) {
+            foreach ($inputs as $input) {
+                $d = $this->restStore($input);
+                if ($d) {
+                    array_push($res, $d);
+                } else {
+                    array_push($res, ['code' => '422', 'error' => '']);
+                }
+            }
+        }
+        return $res;
+    }
+
+    protected function batchUpdate($inputs)
+    {
+        $res = [];
+        if (!is_array($inputs)) {
+            $inputs = json_decode($inputs, true);
+        }
+        if ($inputs) {
+            foreach ($inputs as $id => $input) {
+                $d = $this->restUpdate($input, $id);
+                if ($d) {
+                    array_push($res, $d);
+                } else {
+                    array_push($res, ['code'=>422, 'error'=>'']);
+                }
+            }
+        }
+        return $res;
+    }
+
+    protected function batchDelete($inputs)
+    {
+        $res = [];
+        if (!is_array($inputs)) {
+            $inputs = explode(',', $inputs);
+        }
+        foreach ($inputs as $id) {
+            $d = $this->restDelete([], $id);
+            if ($d) {
+                array_push($res, ['code'=>204]);
+            } else {
+                array_push($res, ['code'=>422, 'error'=>'']);
+            }
+        }
+        return $res;
     }
 
     /**
