@@ -79,12 +79,20 @@ trait RestfulControllerTrait
         return $this->responseRestDelete($data);
     }
 
+    /**
+     * Batch process.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function batch(Request $request)
     {
         $inputs = json_decode($request->getContent(), true);
+        $data = [];
         if ($inputs) {
-            $res = $this->batchProcess($inputs);
+            $data = $this->batchProcess($inputs);
         }
+        return $this->responseBatch($data);
     }
 
     /**
@@ -299,11 +307,15 @@ trait RestfulControllerTrait
         return response('', 204);
     }
 
-    protected function batchProcess($inputs)
+    /**
+     * @param array $inputs
+     * @return array
+     */
+    protected function batchProcess(array $inputs)
     {
         $res = [];
         foreach ($inputs as $method => $input) {
-            switch ($method) {
+            switch (strtoupper($method)) {
                 case 'GET': $res['GET'] = $this->batchGet($input); break;
                 case 'CREATE': $res['CREATE'] = $this->batchPost($input); break;
                 case 'UPDATE': $res['UPDATE'] = $this->batchUpdate($input); break;
@@ -311,6 +323,15 @@ trait RestfulControllerTrait
             }
         }
         return $res;
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    protected function responseBatch($data)
+    {
+        return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -335,6 +356,10 @@ trait RestfulControllerTrait
         return $res;
     }
 
+    /**
+     * @param $inputs
+     * @return array
+     */
     protected function batchPost($inputs)
     {
         $res = [];
@@ -343,17 +368,25 @@ trait RestfulControllerTrait
         }
         if ($inputs) {
             foreach ($inputs as $input) {
-                $d = $this->restStore($input);
-                if ($d) {
-                    array_push($res, $d);
-                } else {
-                    array_push($res, ['code' => '422', 'error' => '']);
+                try {
+                    $d = $this->restStore($input);
+                    if ($d) {
+                        array_push($res, $d);
+                    } else {
+                        array_push($res, ['code' => '422', 'error' => '']);
+                    }
+                } catch (\Exception $e) {
+                    array_push($res, ['code' => '422', 'error' => $e->getMessage()]);
                 }
             }
         }
         return $res;
     }
 
+    /**
+     * @param $inputs
+     * @return array
+     */
     protected function batchUpdate($inputs)
     {
         $res = [];
@@ -362,17 +395,25 @@ trait RestfulControllerTrait
         }
         if ($inputs) {
             foreach ($inputs as $id => $input) {
-                $d = $this->restUpdate($input, $id);
-                if ($d) {
-                    array_push($res, $d);
-                } else {
-                    array_push($res, ['code'=>422, 'error'=>'']);
+                try {
+                    $d = $this->restUpdate($input, $id);
+                    if ($d) {
+                        $res[$id] = $d;
+                    } else {
+                        $res[$id] = ['code' => 422, 'error' => ''];
+                    }
+                } catch (\Exception $e) {
+                    $res[$id] = ['code' => 422, 'error' => $e->getMessage()];
                 }
             }
         }
         return $res;
     }
 
+    /**
+     * @param $inputs
+     * @return array
+     */
     protected function batchDelete($inputs)
     {
         $res = [];
@@ -380,11 +421,15 @@ trait RestfulControllerTrait
             $inputs = explode(',', $inputs);
         }
         foreach ($inputs as $id) {
-            $d = $this->restDelete([], $id);
-            if ($d) {
-                array_push($res, ['code'=>204]);
-            } else {
-                array_push($res, ['code'=>422, 'error'=>'']);
+            try {
+                $d = $this->restDelete([], $id);
+                if ($d) {
+                    array_push($res, ['code' => 204]);
+                } else {
+                    array_push($res, ['code' => 422, 'error' => '']);
+                }
+            } catch (\Exception $e) {
+                array_push($res, ['code' => 422, 'error' => $e->getMessage()]);
             }
         }
         return $res;
