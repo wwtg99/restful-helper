@@ -33,7 +33,7 @@ trait RestHelperTrait
      */
     public function scopeIndex($query, $inputs = null)
     {
-        if (!$inputs && function_exists('request')) {
+        if (is_null($inputs) && function_exists('request')) {
             $inputs = request()->all();
         }
         list($limit, $offset) = $this->parseRestPage($inputs);
