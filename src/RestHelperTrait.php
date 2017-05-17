@@ -41,13 +41,7 @@ trait RestHelperTrait
         $filters = $this->parseRestFilter($inputs);
         $sorts = $this->parseRestSort($inputs);
         if ($filters) {
-            foreach ($filters as $f => $v) {
-                if (is_array($v) && count($v) >= 2) {
-                    $query->where($f, $v[0], $v[1]);
-                } else {
-                    $query->where($f, $v);
-                }
-            }
+            $query->where($filters);
         }
         if ($fields == ['count']) {
             return $query->cloneWithout(['columns'])->cloneWithoutBindings(['select']);
@@ -149,15 +143,19 @@ trait RestHelperTrait
             $filters = [];
             foreach ($this->filterableFields as $filterableField) {
                 if (isset($query[$filterableField])) {
-                    $filters[$filterableField] = $query[$filterableField];
-                } elseif (isset($query[$filterableField . '>'])) {
-                    $filters[$filterableField] = ['>=', $query[$filterableField . '>']];
-                } elseif (isset($query[$filterableField . '<'])) {
-                    $filters[$filterableField] = ['<=', $query[$filterableField . '<']];
-                } elseif (isset($query[$filterableField . '!'])) {
-                    $filters[$filterableField] = ['<>', $query[$filterableField . '!']];
-                } elseif (isset($query[$filterableField . '*'])) {
-                    $filters[$filterableField] = ['like', '%' . $query[$filterableField . '*'] . '%'];
+                    $filters[] = [$filterableField, '=', $query[$filterableField]];
+                }
+                if (isset($query[$filterableField . '>'])) {
+                    $filters[] = [$filterableField, '>=', $query[$filterableField . '>']];
+                }
+                if (isset($query[$filterableField . '<'])) {
+                    $filters[] = [$filterableField, '<=', $query[$filterableField . '<']];
+                }
+                if (isset($query[$filterableField . '!'])) {
+                    $filters[] = [$filterableField, '<>', $query[$filterableField . '!']];
+                }
+                if (isset($query[$filterableField . '*'])) {
+                    $filters[] = [$filterableField, 'like', '%' . $query[$filterableField . '*'] . '%'];
                 }
             }
             return $filters;
