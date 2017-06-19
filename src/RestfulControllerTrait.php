@@ -11,6 +11,7 @@ namespace Wwtg99\RestfulHelper;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Wwtg99\RestfulHelper\Exception\UpdateConflictException;
 
 trait RestfulControllerTrait
 {
@@ -246,11 +247,14 @@ trait RestfulControllerTrait
      */
     protected function restUpdate($inputs, $id)
     {
-        $re = $this->getModel()->find($id)->update($inputs);
-        if ($re) {
-            return $this->getModel()->find($id);
+        $model = $this->getModel()->findOrFail($id);
+        if (isset($inputs['updated_at']) && isset($model->updated_at)) {
+            if ($inputs['updated_at'] < $model->updated_at) {
+                throw new UpdateConflictException();
+            }
         }
-        return false;
+        $re = $model->update($inputs);
+        return $model;
     }
 
     /**
@@ -261,11 +265,7 @@ trait RestfulControllerTrait
      */
     protected function responseRestUpdate($data)
     {
-        if ($data) {
-            return response()->json($data, 201, [], JSON_UNESCAPED_UNICODE);
-        } else {
-            return response('', 400);
-        }
+        return response()->json($data, 201, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -288,12 +288,9 @@ trait RestfulControllerTrait
      */
     protected function restDelete($inputs, $id)
     {
-        $model = $this->getModel()->find($id);
-        if ($model) {
-            $model->delete();
-            return true;
-        }
-        return false;
+        $model = $this->getModel()->findOrFail($id);
+        $model->delete();
+        return true;
     }
 
     /**
